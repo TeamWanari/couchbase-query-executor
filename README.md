@@ -10,4 +10,6 @@ public <T> List<T> find(JsonObject params, Class<T> clazz) - returns all entitie
  
 public <T> CouchbasePage<T> find(JsonObject params, Pageable pageable, Class<T> clazz) - returns the entities uses pageable param for the limit and offset.
 
+### Installation
+
 Use https://jitpack.io/ to import it to your project
