@@ -106,3 +106,11 @@ There are constant postfixes defined in CouchbaseQueryExecutor that helps you to
 | IN_FILTER | Compares the field and the given value. Gives back the document any of the values match the field | `filters.put("age" + CouchbaseQueryExecutor.IN_FILTER, JsonArray.from(17, 18))` |
 
 Also if you add the `CouchbaseQueryExecutor.IGNORE_CASE_ORDER` postfix to a sort param in the Pageable object, it will sort the documents ignoring the case. Actually in SpringData you have to provide this postfix in the query string, and the executor will check the ending of the parameter.
+
+## Final thoughts
+
+This is not a final nor a complete implementation, but it is useful if you want to build N1QL queries dynamically.I only implemented functions and filter postfixes that I needed in a specific application.
+
+## Future
+
+The code is provided as is. If I'll have time and need other use-cases, I'll extend the functionality. Feel free to contribute to it :)
