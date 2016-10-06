@@ -93,8 +93,8 @@ public class CouchbaseQueryExecutor {
         CouchbaseTemplate template = createTemplate();
 
         Statement query = createSumStatement(params, field);
-        N1qlQuery querzWithParams = N1qlQuery.parameterized(query, params);
-        LinkedHashMap sumMap = ((LinkedHashMap) template.findByN1QLProjection(querzWithParams, Object.class).get(0));
+        N1qlQuery queryWithParams = N1qlQuery.parameterized(query, params);
+        LinkedHashMap sumMap = ((LinkedHashMap) template.findByN1QLProjection(queryWithParams, Object.class).get(0));
 
         return ((Integer) sumMap.get("sum"));
     }
