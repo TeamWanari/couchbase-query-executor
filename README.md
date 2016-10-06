@@ -4,7 +4,7 @@ Library for filterable and sortable list in SpringData with CouchBase using N1QL
 
 ## Installation
 
-You can build dynamic N1QL queries in youe SpringData application with this lib.
+You can build dynamic N1QL queries in youe SpringData application with this lib. Note that you can **only read** data with this library. If you want to insert/update/delete use the SyncGateway API.
 
 Use https://jitpack.io/ to import it to your project and add the following lines to your pom.xml (as jitpack shows)
 
