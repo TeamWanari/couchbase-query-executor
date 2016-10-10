@@ -73,6 +73,7 @@ public class CouchbaseQueryExecutor {
             .map(hashMap -> {
                 LinkedHashMap data = (LinkedHashMap) hashMap.get("data");
                 data.put("_id", hashMap.get("id"));
+                data.put("_rev", ((LinkedHashMap) data.get("_sync")).get("rev"));
                 return objectMapper.convertValue(data, clazz);
             })
             .collect(Collectors.toList());
