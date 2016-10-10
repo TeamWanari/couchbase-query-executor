@@ -20,7 +20,7 @@ Use https://jitpack.io/ to import it to your project and add the following lines
 <dependency>
     <groupId>com.github.TeamWanari</groupId>
     <artifactId>couchbase-query-executor</artifactId>
-    <version>1.0</version>
+    <version>{version}</version>
 </dependency>
 ```
 After adding the dependency to your pom.xml, you have to implement the following interface
