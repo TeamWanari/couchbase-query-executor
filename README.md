@@ -1,6 +1,6 @@
 # couchbase-query-executor
 
-A library for filterable and sortable lists in SpringData with CouchBase using N1QL query.
+A library for filterable and sortable lists in SpringData with CouchBase using N1QL query. You can read more about this lib in [this blogpost](http://leaks.wanari.com/2016/10/24/couchbase-can-make-filterable-list-springdata/?utm_source=github&utm_medium=20161024&utm_campaign=suxy).
 
 ## Installation
 
