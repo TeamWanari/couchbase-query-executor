@@ -7,6 +7,7 @@ import com.couchbase.client.java.query.dsl.Expression;
 import com.couchbase.client.java.query.dsl.Sort;
 import com.couchbase.client.java.query.dsl.path.FromPath;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.wanari.utils.couchbase.exceptions.NonUniqueResultException;
 import org.springframework.data.couchbase.core.CouchbaseTemplate;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
@@ -15,6 +16,7 @@ import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.couchbase.client.java.query.Select.select;
@@ -43,6 +45,11 @@ public class CouchbaseQueryExecutor {
         } catch(Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public <T> Optional<T> findOne(JsonObject params, Class<T> clazz) {
+        List<T> documents = find(params, clazz);
+        return asOptional(documents, params);
     }
 
     public <T> CouchbasePage<T> find(JsonObject params, Pageable pageable, Class<T> clazz) {
@@ -232,5 +239,15 @@ public class CouchbaseQueryExecutor {
             }
         });
         return orderBy.toArray(new Sort[orderBy.size()]);
+    }
+
+    private <T> Optional<T> asOptional(List<T> documents, JsonObject filters) {
+        if(documents.isEmpty()) {
+            return Optional.empty();
+        }
+        if(documents.size() == 1) {
+            return Optional.of(documents.get(0));
+        }
+        throw new NonUniqueResultException(filters);
     }
 }
