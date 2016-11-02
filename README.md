@@ -33,7 +33,7 @@ public interface CouchbaseQueryExecutorConfiguration {
     String getBucketName();
 }
 ```
-  
+
 ### Example implementation:
 ##### CouchbaseConfiguration.java
 ```java
@@ -89,6 +89,7 @@ Basically, CouchbaseQueryExecutor provides you with functions to build and run q
 ### CouchbaseQueryExecutor functions
 |**Name**|**Return type**|**Description**|
 |---|---|---|
+|`findOne(JsonObject params, Class<T> clazz)`|`Optional<T>`|Executes a query which gives back one document. Throws `NonUniqueResultException` if more than one document found|
 |`find(JsonObject params, Pageable pageable, Class<T> clazz)`|`CouchbasePage<T>`|Executes a query which gives back a page of the matching documents|
 |`find(JsonObject params, Class<T> clazz)`|`List<T>`|Executes a query which gives back a all of the matching documents|
 |`public Integer count(JsonObject params)`|`Integer`|Executes a query which counts all of the matching documents|
