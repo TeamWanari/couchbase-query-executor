@@ -1,12 +1,12 @@
 # couchbase-query-executor
 
-Library for filterable and sortable list in SpringData with CouchBase using N1QL query
+A library for filterable and sortable lists in SpringData with CouchBase using N1QL query. You can read more about this lib in [this blogpost](http://leaks.wanari.com/2016/10/24/couchbase-can-make-filterable-list-springdata/?utm_source=github&utm_medium=20161024&utm_campaign=suxy).
 
 ## Installation
 
-You can build dynamic N1QL queries in youe SpringData application with this lib. Note that you can **only read** data with this library. If you want to insert/update/delete use the SyncGateway API.
+You can build dynamic N1QL queries in your SpringData application with this lib. Note that you can **only read** data with this library. If you want to insert/update/delete use the SyncGateway API.
 
-Use https://jitpack.io/ to import it to your project and add the following lines to your pom.xml (as jitpack shows)
+Use https://jitpack.io/ to import this lib to your project and add the following lines to your pom.xml (as jitpack shows)
 
 ```xml
 <repositories>
@@ -23,7 +23,7 @@ Use https://jitpack.io/ to import it to your project and add the following lines
     <version>{version}</version>
 </dependency>
 ```
-After adding the dependency to your pom.xml, you have to implement the following interface
+After adding the dependency to your pom.xml, you have to implement the following interface:
 ```java
 public interface CouchbaseQueryExecutorConfiguration {
     ClusterInfo couchbaseClusterInfo() throws Exception;
@@ -84,7 +84,7 @@ couchbase:
         password: superSecretPassword
 ```
 ## Usage and features
-Basically CouchbaseQueryExecutor provides you functions to build queries dinamically and run them. After running the executor parses them to the POJO class that you gave as parameter.
+Basically, CouchbaseQueryExecutor provides you with functions to build and run queries dynamically. After running, the executor parses them to the POJO class that you gave as a parameter.
 
 ### CouchbaseQueryExecutor functions
 |**Name**|**Return type**|**Description**|
@@ -94,7 +94,7 @@ Basically CouchbaseQueryExecutor provides you functions to build queries dinamic
 |`public Integer count(JsonObject params)`|`Integer`|Executes a query which counts all of the matching documents|
 |`sum(JsonObject params, String field)`|`Integer`|Executes a query which sums the results by the given field|
 
-There are constant postfixes defined in CouchbaseQueryExecutor that helps you to make the query you want. All you need is to append the postfix to your key, and CouchbaseQueryExecutor will do the work for you.
+There are constant postfixes defined in CouchbaseQueryExecutor, helping you make the query you want. All you need is to append the postfix to your key, and CouchbaseQueryExecutor will do the work for you.
 
 ### CouchbaseQueryExecutor constant postfixes
 |**Name**|**Description**|**Example**|
@@ -105,11 +105,11 @@ There are constant postfixes defined in CouchbaseQueryExecutor that helps you to
 |NOT_FILTER|Compares the field and the given value. Gives back the document if the field doesn't equal to the value|`filters.put("title" + CouchbaseQueryExecutor.NOT_FILTER, "i don't need this")`|
 |IN_FILTER|Compares the field and the given value. Gives back the document any of the values match the field|`filters.put("age" + CouchbaseQueryExecutor.IN_FILTER, JsonArray.from(17, 18))`|
 
-Also if you add the `CouchbaseQueryExecutor.IGNORE_CASE_ORDER` postfix to a sort param in the Pageable object, it will sort the documents ignoring the case. Actually in SpringData you have to provide this postfix in the query string, and the executor will check the ending of the parameter.
+Also if you add the `CouchbaseQueryExecutor.IGNORE_CASE_ORDER` postfix to a sort param in the Pageable object, it will sort the documents ignoring case. Actually in SpringData, you have to provide this postfix in the query string, and the executor will check the ending of the parameter. Therefore:
 
 ## Final thoughts
 
-This is not a final nor a complete implementation, but it is useful if you want to build N1QL queries dynamically.I only implemented functions and filter postfixes that I needed in a specific application.
+This is not a final, nor a complete implementation, but it is useful if you want to build N1QL queries dynamically. I only implemented functions and filter postfixes that I needed in a specific application.
 
 ## Future
 
