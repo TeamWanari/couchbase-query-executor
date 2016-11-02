@@ -241,13 +241,13 @@ public class CouchbaseQueryExecutor {
         return orderBy.toArray(new Sort[orderBy.size()]);
     }
 
-    private <T> Optional<T> asOptional(List<T> documents, JsonObject filters) {
+    private <T> Optional<T> asOptional(List<T> documents, JsonObject params) {
         if(documents.isEmpty()) {
             return Optional.empty();
         }
         if(documents.size() == 1) {
             return Optional.of(documents.get(0));
         }
-        throw new NonUniqueResultException(filters);
+        throw new NonUniqueResultException(params);
     }
 }
