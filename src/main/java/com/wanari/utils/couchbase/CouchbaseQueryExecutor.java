@@ -111,14 +111,16 @@ public class CouchbaseQueryExecutor {
         Expression bucketName = i(couchbaseConfiguration.getBucketName());
         return count(bucketName)
             .from(bucketName)
-            .where(composeWhere(bucketName, params));
+            .where(composeWhere(bucketName, params))
+            .groupBy(meta(bucketName));
     }
 
     private Statement createSumStatement(JsonObject params, String field) {
         Expression bucketName = i(couchbaseConfiguration.getBucketName());
         return sum(bucketName, field)
             .from(bucketName)
-            .where(composeWhere(bucketName, params));
+            .where(composeWhere(bucketName, params))
+            .groupBy(meta(bucketName));
     }
 
     private Statement createQueryStatement(JsonObject params, Pageable pageable) {
@@ -150,6 +152,9 @@ public class CouchbaseQueryExecutor {
         return select(bucketName + " as data, meta(" + bucketName + ").id AS id ");
     }
 
+    private String meta(Expression bucketName) {
+        return "meta(" + bucketName + ").id";
+    }
 
     private Expression composeWhere(Expression bucketName, JsonObject params) {
         List<Expression> expressions = params.getNames()
