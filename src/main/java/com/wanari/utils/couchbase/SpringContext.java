@@ -1,5 +1,6 @@
 package com.wanari.utils.couchbase;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -7,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 public class SpringContext {
 
     @Bean
-    public CouchbaseQueryExecutor couchbaseQueryExecutor() {
-        return new CouchbaseQueryExecutor();
+    public CouchbaseQueryExecutor couchbaseQueryExecutor(CouchbaseQueryExecutorConfiguration couchbaseConfiguration, ObjectMapper objectMapper) {
+        return new CouchbaseQueryExecutor(couchbaseConfiguration, objectMapper);
     }
 }
