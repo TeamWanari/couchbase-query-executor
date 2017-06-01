@@ -107,6 +107,11 @@ There are constant postfixes defined in CouchbaseQueryExecutor, helping you make
 |TO_FILTER|Gives back documents that has lower value in the field|`filters.put("estimatedTime" + CouchbaseQueryExecutor.TO_FILTER, 20)`|
 |NOT_FILTER|Compares the field and the given value. Gives back the document if the field doesn't equal to the value|`filters.put("title" + CouchbaseQueryExecutor.NOT_FILTER, "i don't need this")`|
 |IN_FILTER|Compares the field and the given value. Gives back the document any of the values match the field|`filters.put("age" + CouchbaseQueryExecutor.IN_FILTER, JsonArray.from(17, 18))`|
+|NULL|Gives back document if it has the field, but the value is null|`filters.put("fieldName" + CouchbaseQueryExecutor.NULL_FILTER, null);`|
+|NOT_NULL|Gives back document if it has the field, but the value is not null|`filters.put("fieldName" + CouchbaseQueryExecutor.NOT_NULL_FILTER, null);`|
+|MISSING|Gives back document if it doesn't have the field|`filters.put("fieldName" + CouchbaseQueryExecutor.MISSING_FILTER, null);`|
+|NULL_OR_MISSING|Gives back document if it doesn't have the field, or if it has but value is null|`filters.put("fieldName" + CouchbaseQueryExecutor.NULL_OR_MISSING_FILTER, null);`|
+
 
 Also if you add the `CouchbaseQueryExecutor.IGNORE_CASE_ORDER` postfix to a sort param in the Pageable object, it will sort the documents ignoring case. Actually in SpringData, you have to provide this postfix in the query string, and the executor will check the ending of the parameter. Therefore:
 

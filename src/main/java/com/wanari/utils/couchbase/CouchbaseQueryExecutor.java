@@ -41,6 +41,10 @@ public class CouchbaseQueryExecutor<T> {
     public static final String TO_FILTER = "_to";
     public static final String NOT_FILTER = "_not";
     public static final String IN_FILTER = "_in";
+    public static final String NULL_FILTER = "_null";
+    public static final String NOT_NULL_FILTER = "_notnull";
+    public static final String MISSING_FILTER = "_missing";
+    public static final String NULL_OR_MISSING_FILTER = "_nullormissing";
     private static final String IGNORE_CASE_ORDER = "_ignorecase";
     private DataConverter<T> converter;
     private final ObjectMapper objectMapper;
@@ -219,6 +223,18 @@ public class CouchbaseQueryExecutor<T> {
         } else if(key.endsWith(IN_FILTER)) {
             propertyKey = key.substring(0, key.length() - IN_FILTER.length());
             return createInExpression(propertyKey, key);
+        } else if(key.endsWith(NULL_FILTER)) {
+            propertyKey = propertyKey.substring(0, propertyKey.length() - NULL_FILTER.length());
+            return createNullExpression(propertyKey, key);
+        } else if(key.endsWith(NOT_NULL_FILTER)) {
+            propertyKey = propertyKey.substring(0, propertyKey.length() - NOT_NULL_FILTER.length());
+            return createNotNullExpression(propertyKey, key);
+        } else if(key.endsWith(MISSING_FILTER)) {
+            propertyKey = propertyKey.substring(0, propertyKey.length() - MISSING_FILTER.length());
+            return createMissingExpression(propertyKey, key);
+        } else if(key.endsWith(NULL_OR_MISSING_FILTER)) {
+            propertyKey = propertyKey.substring(0, propertyKey.length() - NULL_OR_MISSING_FILTER.length());
+            return createNullOrMissingExpression(propertyKey, key);
         } else {
             return createEqualsExpression(propertyKey, key);
         }
@@ -246,6 +262,22 @@ public class CouchbaseQueryExecutor<T> {
 
     private Expression createContainsExpression(String propertyKey, String key) {
         return x("CONTAINS(LOWER(" + propertyKey + "), LOWER($" + key + "))");
+    }
+
+    private Expression createNullExpression(String propertyKey, String key) {
+        return x(propertyKey + " IS NULL");
+    }
+
+    private Expression createNotNullExpression(String propertyKey, String key) {
+        return x(propertyKey + " IS NOT NULL");
+    }
+
+    private Expression createMissingExpression(String propertyKey, String key) {
+        return x(propertyKey + " IS MISSING");
+    }
+
+    private Expression createNullOrMissingExpression(String propertyKey, String key) {
+        return x(propertyKey + " IS NULL OR " + propertyKey + " IS MISSING");
     }
 
     private String lowerCase(String input) {
