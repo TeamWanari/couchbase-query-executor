@@ -11,6 +11,8 @@ import com.wanari.utils.couchbase.converters.*;
 import com.wanari.utils.couchbase.exceptions.NonUniqueResultException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.couchbase.core.CouchbaseTemplate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
@@ -88,18 +90,16 @@ public class CouchbaseQueryExecutor<T> {
         return asOptional(documents, params);
     }
 
-    public CouchbasePage<T> find(JsonObject params, Pageable pageable, Class<T> clazz) {
-        CouchbasePage<T> page = new CouchbasePage<>(pageable);
+    public Page<T> find(JsonObject params, Pageable pageable, Class<T> clazz) {
         CouchbaseTemplate template = createTemplate();
 
         Statement query = createQueryStatement(params, pageable);
         N1qlQuery queryWithParameter = N1qlQuery.parameterized(query, params);
 
-        page.data = convertToDataList(template.findByN1QLProjection(queryWithParameter, LinkedHashMap.class), clazz);
-        page.totalElements = count(params);
-        page.calculateTotalPages();
+        List<T> data = convertToDataList(template.findByN1QLProjection(queryWithParameter, LinkedHashMap.class), clazz);
+        Integer count = count(params);
 
-        return page;
+        return new PageImpl<>(data, pageable, count);
     }
 
     public List<T> find(JsonObject params, Class<T> clazz) {
