@@ -7,9 +7,7 @@ import com.couchbase.client.java.query.dsl.Expression;
 import com.couchbase.client.java.query.dsl.Sort;
 import com.couchbase.client.java.query.dsl.path.FromPath;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.wanari.utils.couchbase.converters.CouchbaseDataConverter;
-import com.wanari.utils.couchbase.converters.DataConverter;
-import com.wanari.utils.couchbase.converters.SyncGatewayDataConverter;
+import com.wanari.utils.couchbase.converters.*;
 import com.wanari.utils.couchbase.exceptions.NonUniqueResultException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.couchbase.core.CouchbaseTemplate;
@@ -33,6 +31,9 @@ public class CouchbaseQueryExecutor<T> {
     @Value("${couchbase-query-executor.with-sync-gateway:false}")
     private Boolean withSyncGateway;
 
+    @Value("${couchbase-query-executor.use-default-id-fields:true}")
+    private Boolean useDefaultIdFields;
+
     public static final String CONTAINS_FILTER = "_contains";
     public static final String FROM_FILTER = "_from";
     public static final String TO_FILTER = "_to";
@@ -52,9 +53,17 @@ public class CouchbaseQueryExecutor<T> {
     @PostConstruct
     private void init() {
         if(withSyncGateway) {
-            converter = new SyncGatewayDataConverter<>(objectMapper);
+            if(useDefaultIdFields) {
+                converter = new SyncGatewayDataConverter<>(objectMapper);
+            } else {
+                converter = new SyncGatewayDataConverterWithReflection<>(objectMapper);
+            }
         } else {
-            converter = new CouchbaseDataConverter<>(objectMapper);
+            if(useDefaultIdFields) {
+                converter = new CouchbaseDataConverter<>(objectMapper);
+            } else {
+                converter = new CouchbaseDataConverterWithReflection<>(objectMapper);
+            }
         }
     }
 
