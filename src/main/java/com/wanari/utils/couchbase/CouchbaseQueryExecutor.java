@@ -81,6 +81,19 @@ public class CouchbaseQueryExecutor<T> {
         this.converter = converter;
     }
 
+    private String getPropertyKey(String key) {
+        return key.replaceAll("[\\\\.]", "_");
+    }
+
+    private JsonObject paramaterizeParams(JsonObject params) {
+        return JsonObject.from(
+            params.toMap().entrySet().stream().collect(Collectors.toMap(
+                entry -> getPropertyKey(entry.getKey()),
+                entry -> params.get(entry.getKey())
+            ))
+        );
+    }
+
     private CouchbaseTemplate createTemplate() {
         try {
             return new CouchbaseTemplate(couchbaseConfiguration.couchbaseClusterInfo(), couchbaseConfiguration.couchbaseClient());
@@ -98,7 +111,7 @@ public class CouchbaseQueryExecutor<T> {
         CouchbaseTemplate template = createTemplate();
 
         Statement query = createQueryStatement(params, pageable);
-        N1qlQuery queryWithParameter = N1qlQuery.parameterized(query, params);
+        N1qlQuery queryWithParameter = N1qlQuery.parameterized(query, paramaterizeParams(params));
 
         List<T> data = convertToDataList(template.findByN1QLProjection(queryWithParameter, LinkedHashMap.class), clazz);
         Integer count = count(params);
@@ -110,7 +123,7 @@ public class CouchbaseQueryExecutor<T> {
         CouchbaseTemplate template = createTemplate();
 
         Statement query = createQueryStatement(params);
-        N1qlQuery queryWithParameter = N1qlQuery.parameterized(query, params);
+        N1qlQuery queryWithParameter = N1qlQuery.parameterized(query, paramaterizeParams(params));
 
         return convertToDataList(template.findByN1QLProjection(queryWithParameter, LinkedHashMap.class), clazz);
     }
@@ -125,7 +138,7 @@ public class CouchbaseQueryExecutor<T> {
         CouchbaseTemplate template = createTemplate();
 
         Statement query = createCountStatement(params);
-        N1qlQuery queryWithParams = N1qlQuery.parameterized(query, params);
+        N1qlQuery queryWithParams = N1qlQuery.parameterized(query, paramaterizeParams(params));
         LinkedHashMap countMap = ((LinkedHashMap) template.findByN1QLProjection(queryWithParams, Object.class).get(0));
 
         return ((Integer) countMap.get("count"));
@@ -136,7 +149,7 @@ public class CouchbaseQueryExecutor<T> {
         CouchbaseTemplate template = createTemplate();
 
         Statement query = createSumStatement(params, field);
-        N1qlQuery queryWithParams = N1qlQuery.parameterized(query, params);
+        N1qlQuery queryWithParams = N1qlQuery.parameterized(query, paramaterizeParams(params));
         LinkedHashMap sumMap = ((LinkedHashMap) template.findByN1QLProjection(queryWithParams, Object.class).get(0));
 
         return ((Integer) sumMap.get("sum"));
@@ -207,21 +220,22 @@ public class CouchbaseQueryExecutor<T> {
 
     private Expression createExpression(String key) {
         String propertyKey = key;
+        key = getPropertyKey(key);
 
         if(key.endsWith(CONTAINS_FILTER)) {
-            propertyKey = key.substring(0, key.length() - CONTAINS_FILTER.length());
+            propertyKey = propertyKey.substring(0, propertyKey.length() - CONTAINS_FILTER.length());
             return createContainsExpression(propertyKey, key);
         } else if(key.endsWith(FROM_FILTER)) {
-            propertyKey = key.substring(0, key.length() - FROM_FILTER.length());
+            propertyKey = propertyKey.substring(0, propertyKey.length() - FROM_FILTER.length());
             return createGreaterThanOrEqualsExpression(propertyKey, key);
         } else if(key.endsWith(TO_FILTER)) {
-            propertyKey = key.substring(0, key.length() - TO_FILTER.length());
+            propertyKey = propertyKey.substring(0, propertyKey.length() - TO_FILTER.length());
             return createLessThanOrEqualsExpression(propertyKey, key);
         } else if(key.endsWith(NOT_FILTER)) {
-            propertyKey = key.substring(0, key.length() - NOT_FILTER.length());
+            propertyKey = propertyKey.substring(0, propertyKey.length() - NOT_FILTER.length());
             return createNotEqualsExpression(propertyKey, key);
         } else if(key.endsWith(IN_FILTER)) {
-            propertyKey = key.substring(0, key.length() - IN_FILTER.length());
+            propertyKey = propertyKey.substring(0, propertyKey.length() - IN_FILTER.length());
             return createInExpression(propertyKey, key);
         } else if(key.endsWith(NULL_FILTER)) {
             propertyKey = propertyKey.substring(0, propertyKey.length() - NULL_FILTER.length());
