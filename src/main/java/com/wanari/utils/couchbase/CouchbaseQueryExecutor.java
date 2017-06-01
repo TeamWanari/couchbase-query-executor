@@ -7,12 +7,16 @@ import com.couchbase.client.java.query.dsl.Expression;
 import com.couchbase.client.java.query.dsl.Sort;
 import com.couchbase.client.java.query.dsl.path.FromPath;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.wanari.utils.couchbase.converters.CouchbaseDataConverter;
+import com.wanari.utils.couchbase.converters.DataConverter;
+import com.wanari.utils.couchbase.converters.SyncGatewayDataConverter;
 import com.wanari.utils.couchbase.exceptions.NonUniqueResultException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.couchbase.core.CouchbaseTemplate;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
-import javax.inject.Inject;
+import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -24,7 +28,10 @@ import static com.couchbase.client.java.query.dsl.Expression.i;
 import static com.couchbase.client.java.query.dsl.Expression.x;
 
 @Component
-public class CouchbaseQueryExecutor {
+public class CouchbaseQueryExecutor<T> {
+
+    @Value("${couchbase-query-executor.with-sync-gateway:false}")
+    private Boolean withSyncGateway;
 
     public static final String CONTAINS_FILTER = "_contains";
     public static final String FROM_FILTER = "_from";
@@ -32,12 +39,32 @@ public class CouchbaseQueryExecutor {
     public static final String NOT_FILTER = "_not";
     public static final String IN_FILTER = "_in";
     private static final String IGNORE_CASE_ORDER = "_ignorecase";
+    private DataConverter<T> converter;
+    private final ObjectMapper objectMapper;
 
-    @Inject
-    private CouchbaseQueryExecutorConfiguration couchbaseConfiguration;
+    private final CouchbaseQueryExecutorConfiguration couchbaseConfiguration;
 
-    @Inject
-    private ObjectMapper objectMapper;
+    public CouchbaseQueryExecutor(CouchbaseQueryExecutorConfiguration couchbaseConfiguration, ObjectMapper objectMapper) {
+        this.couchbaseConfiguration = couchbaseConfiguration;
+        this.objectMapper = objectMapper;
+    }
+
+    @PostConstruct
+    private void init() {
+        if(withSyncGateway) {
+            converter = new SyncGatewayDataConverter<>(objectMapper);
+        } else {
+            converter = new CouchbaseDataConverter<>(objectMapper);
+        }
+    }
+
+    public DataConverter<T> getConverter() {
+        return converter;
+    }
+
+    public void setConverter(DataConverter<T> converter) {
+        this.converter = converter;
+    }
 
     private CouchbaseTemplate createTemplate() {
         try {
@@ -47,12 +74,12 @@ public class CouchbaseQueryExecutor {
         }
     }
 
-    public <T> Optional<T> findOne(JsonObject params, Class<T> clazz) {
+    public Optional<T> findOne(JsonObject params, Class<T> clazz) {
         List<T> documents = find(params, clazz);
         return asOptional(documents, params);
     }
 
-    public <T> CouchbasePage<T> find(JsonObject params, Pageable pageable, Class<T> clazz) {
+    public CouchbasePage<T> find(JsonObject params, Pageable pageable, Class<T> clazz) {
         CouchbasePage<T> page = new CouchbasePage<>(pageable);
         CouchbaseTemplate template = createTemplate();
 
@@ -66,7 +93,7 @@ public class CouchbaseQueryExecutor {
         return page;
     }
 
-    public <T> List<T> find(JsonObject params, Class<T> clazz) {
+    public List<T> find(JsonObject params, Class<T> clazz) {
         CouchbaseTemplate template = createTemplate();
 
         Statement query = createQueryStatement(params);
@@ -75,14 +102,9 @@ public class CouchbaseQueryExecutor {
         return convertToDataList(template.findByN1QLProjection(queryWithParameter, LinkedHashMap.class), clazz);
     }
 
-    private <T> List<T> convertToDataList(List<LinkedHashMap> queriedList, Class<T> clazz) {
+    private List<T> convertToDataList(List<LinkedHashMap> queriedList, Class<T> clazz) {
         return queriedList.stream()
-            .map(hashMap -> {
-                LinkedHashMap data = (LinkedHashMap) hashMap.get("data");
-                data.put("_id", hashMap.get("id"));
-                data.put("_rev", ((LinkedHashMap) data.get("_sync")).get("rev"));
-                return objectMapper.convertValue(data, clazz);
-            })
+            .map(hashMap -> converter.apply(hashMap, clazz))
             .collect(Collectors.toList());
     }
 
@@ -246,7 +268,7 @@ public class CouchbaseQueryExecutor {
         return orderBy.toArray(new Sort[orderBy.size()]);
     }
 
-    private <T> Optional<T> asOptional(List<T> documents, JsonObject params) {
+    private Optional<T> asOptional(List<T> documents, JsonObject params) {
         if(documents.isEmpty()) {
             return Optional.empty();
         }
