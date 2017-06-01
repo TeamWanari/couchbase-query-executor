@@ -4,6 +4,9 @@ A library for filterable and sortable lists in SpringData with CouchBase using N
 
 Stable with Couchbase 4.6.1 and Spring Boot 1.5.3
 
+[![](https://jitpack.io/v/TeamWanari/couchbase-query-executor.svg)](https://jitpack.io/#TeamWanari/couchbase-query-executor)
+
+
 ## Installation
 
 You can build dynamic N1QL queries in your SpringData application with this lib. Note that you can **only read** data with this library. If you want to insert/update/delete use the SyncGateway API.
