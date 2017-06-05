@@ -83,13 +83,25 @@ public class CouchbaseConfiguration extends AbstractCouchbaseConfiguration imple
 ##### application.yml
 ```yaml
 couchbase:
-    cluster:
-        ip: 127.0.0.1
-        bucket: dev
-        password: superSecretPassword
+  cluster:
+    ip: 127.0.0.1
+    bucket: dev
+    password: superSecretPassword
 ```
 ## Usage and features
 Basically, CouchbaseQueryExecutor provides you with functions to build and run queries dynamically. After running, the executor parses them to the POJO class that you gave as a parameter.
+
+### Configuration
+
+```yaml
+couchbase-query-executor:
+  with-sync-gateway: false  # Default is false
+  use-default-id-fields: true #Default is true
+```
+
+If you are using Couchbase server with SyncGateway you should set the `couchbase-query-executor.with-sync-gateway` to `true`, so the executor can map `_rev` and `_id` to your entities.
+
+If you are using the default naming convention for `id` fields (without SyncGateway it is `id` with SyncGateway it is `_id`) you should leave the `couchbase-query-executor.use-default-id-fields` flag on `true`. If you set that config to false Executor will find the field annotated with `com.couchbase.client.java.repository.annotation.Id` And use it as the id. I recommend you to use the default fields :)
 
 ### CouchbaseQueryExecutor functions
 |**Name**|**Return type**|**Description**|
@@ -100,21 +112,29 @@ Basically, CouchbaseQueryExecutor provides you with functions to build and run q
 |`public Integer count(JsonObject params)`|`Integer`|Executes a query which counts all of the matching documents|
 |`sum(JsonObject params, String field)`|`Integer`|Executes a query which sums the results by the given field|
 
-There are constant postfixes defined in CouchbaseQueryExecutor, helping you make the query you want. All you need is to append the postfix to your key, and CouchbaseQueryExecutor will do the work for you.
+### How to add parameters to queries
 
-### CouchbaseQueryExecutor constant postfixes
-|**Name**|**Description**|**Example**|
-|---|---|---|
-|CONTAINS_FILTER|Compares the field and the given value ignoring the case|`filters.put("title" + CouchbaseQueryExecutor.CONAINS_FILTER, "a string")`|
-|FROM_FILTER|Gives back documents that has higher value in the field|`filters.put("estimatedTime" + CouchbaseQueryExecutor.FROM_FILTER, 20)`|
-|TO_FILTER|Gives back documents that has lower value in the field|`filters.put("estimatedTime" + CouchbaseQueryExecutor.TO_FILTER, 20)`|
-|NOT_FILTER|Compares the field and the given value. Gives back the document if the field doesn't equal to the value|`filters.put("title" + CouchbaseQueryExecutor.NOT_FILTER, "i don't need this")`|
-|IN_FILTER|Compares the field and the given value. Gives back the document any of the values match the field|`filters.put("age" + CouchbaseQueryExecutor.IN_FILTER, JsonArray.from(17, 18))`|
-|NULL|Gives back document if it has the field, but the value is null|`filters.put("fieldName" + CouchbaseQueryExecutor.NULL_FILTER, null);`|
-|NOT_NULL|Gives back document if it has the field, but the value is not null|`filters.put("fieldName" + CouchbaseQueryExecutor.NOT_NULL_FILTER, null);`|
-|MISSING|Gives back document if it doesn't have the field|`filters.put("fieldName" + CouchbaseQueryExecutor.MISSING_FILTER, null);`|
-|NULL_OR_MISSING|Gives back document if it doesn't have the field, or if it has but value is null|`filters.put("fieldName" + CouchbaseQueryExecutor.NULL_OR_MISSING_FILTER, null);`|
+First of all create a `new Parameters()` object, and you can use the builder pattenr is gives to build yout queries an easy way
 
+|**BuilderPath**|**FunctionName**|**Returning / instantly add**|**Description**|
+|---|---|---|---|
+|Parameters|on(String key)|OnPath|You can provide the key of the parameter with this function. Executor is supporting nested querying, so `address.zipCode` means it will look up your document's `address`, then it's `zipCode` to execute the given condition on it|
+|OnPath|isNull()|Adding parameter|Checks if the given key's value is null|
+|OnPath|isNotNull()|Adding parameter|Checks if the given key's value is not null|
+|OnPath|isMissing()|Adding parameter|Checks if the given key's value is missing|
+|OnPath|isMissingOrNull()|Adding parameter|Checks if the given key's value is missing or null|
+|OnPath|is(String value)|ExpressionPath|Checks whether the document's value on the path is equal to the value|
+|OnPath|isNot(String value)|ExpressionPath|Checks whether the document's value on the path is NOT equal to the value|
+|OnPath|contains(String value)|ExpressionPath|Checks whether the document's value on the path contains (ignoring the case) the value|
+|OnPath|in(String value)|ExpressionPath|Checks whether the document's value is in the given array|
+|OnPath|from(String value)|ExpressionPath|Checks whether the document's value on the path is greater than or equal to the value|
+|OnPath|to(String value)|ExpressionPath|Checks whether the document's value on the path is less than or equal to the value|
+|ExpressionPath|onlyIfNonEmpty()|ApplyPath|The expression will only appear in the query if the value is not empty|
+|ExpressionPath|onlyIf(Predicate<String> condition)|ApplyPath|The expression will only appear in the query if the value matches the custom condition|
+|ExpressionPath|andApply(Function<String, T> parser)|Adding parameter|Applies the given parser on the value|
+|ExpressionPath|add()|Adding parameter|Adds the parameter|
+|ApplyPath|andApply(Function<String, T> parser)|Adding parameter|Applies the given parser on the value|
+|ApplyPath|add()|Adding parameter|Adds the parameter|
 
 Also if you add the `CouchbaseQueryExecutor.IGNORE_CASE_ORDER` postfix to a sort param in the Pageable object, it will sort the documents ignoring case. Actually in SpringData, you have to provide this postfix in the query string, and the executor will check the ending of the parameter. Therefore:
 

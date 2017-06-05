@@ -1,9 +1,9 @@
 package com.wanari.utils.couchbase.exceptions;
 
-import com.couchbase.client.java.document.json.JsonObject;
+import com.wanari.utils.couchbase.parameter.Parameters;
 
 public class NonUniqueResultException extends RuntimeException {
-    public NonUniqueResultException(JsonObject params) {
-        super("More than one document found with params: " + params.toString());
+    public NonUniqueResultException(Parameters params) {
+        super("More than one document found with params: " + params.toJsonObject().toString());
     }
 }
