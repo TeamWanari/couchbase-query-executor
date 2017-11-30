@@ -1,6 +1,8 @@
 # couchbase-query-executor
 
-A library for filterable and sortable lists in SpringData with CouchBase using N1QL query. You can read more about this lib in [this blogpost](http://leaks.wanari.com/2016/10/24/couchbase-can-make-filterable-list-springdata/?utm_source=github&utm_medium=20161024&utm_campaign=suxy).
+A library for filterable and sortable lists in SpringData with CouchBase using N1QL query. You can read more about this lib in [this blogpost](http://leaks.wanari.com/2016/10/24/couchbase-can-make-filterable-list-springdata/?utm_source=github&utm_medium=20161024&utm_campaign=suxy) and about the improvements [in this blogpost](http://leaks.wanari.com/2017/08/04/couchbase-vol2-sync-gateway/).
+
+You can find the full source code of the usage [here](https://github.com/TeamWanari/Couchbase-Query-Executor-Example-App)
 
 Stable with Couchbase 4.6.1 and Spring Boot 1.5.3
 
@@ -114,7 +116,7 @@ If you are using the default naming convention for `id` fields (without SyncGate
 
 ### How to add parameters to queries
 
-First of all create a `new Parameters()` object, and you can use the builder pattenr is gives to build yout queries an easy way
+First of all create a `new Parameters()` object, and you can use the builder pattern to build your queries in an easy way
 
 |**BuilderPath**|**FunctionName**|**Returning / instantly add**|**Description**|
 |---|---|---|---|
